@@ -26,7 +26,9 @@ deblender.showBlend(calexp, families, frame=0)
 
 """
 
-import math, re, sys
+import math
+import re
+import sys
 
 import utils
 import lsst.pex.logging as pexLog
@@ -36,6 +38,7 @@ import lsst.afw.image as afwImage
 import lsst.afw.table as afwTable
 import lsst.afw.display.ds9 as ds9
 import lsst.afw.display.utils as displayUtils
+
 
 def getEllipses(src, nsigs=[1.], **kwargs):
     from matplotlib.patches import Ellipse
@@ -53,8 +56,9 @@ def getEllipses(src, nsigs=[1.], **kwargs):
     b = math.sqrt(b2)
     ells = []
     for nsig in nsigs:
-        ells.append(Ellipse([xc,yc], 2.*a*nsig, 2.*b*nsig, angle=theta, **kwargs))
+        ells.append(Ellipse([xc, yc], 2.*a*nsig, 2.*b*nsig, angle=theta, **kwargs))
     return ells
+
 
 def drawEllipses(plt, src, **kwargs):
     return
@@ -63,6 +67,7 @@ def drawEllipses(plt, src, **kwargs):
     for el in els:
         plt.gca().add_artist(el)
     return els
+
 
 def plotDeblendFamily(mi, parent, kids, mapperInfo=None, dkids=[],
                       background=-10, symbolSize=2,
@@ -100,7 +105,7 @@ all the other peaks in its footprint are marked with x (cyan if deblended-as-psf
     C = S
     R = math.ceil(float(N)/C)
 
-    Rx,Ry = [],[]
+    Rx, Ry = [], []
     tts = []
     stys = []
     xys = []
@@ -112,14 +117,14 @@ all the other peaks in its footprint are marked with x (cyan if deblended-as-psf
     for kid in kids:
         kim = footprintToImage(kid.getFootprint(), mi, **aa)
         kidImages[kid] = kim
-        
+
         imBbox.include(kim.getBBox(afwImage.PARENT))
 
     mos = displayUtils.Mosaic(background=background)
 
     if not kim:
         kim = parent_im.clone()
-        
+
     bbox = afwGeom.Box2I(afwGeom.Point2I(kim.getX0() - imBbox.getMinX(),
                                          kim.getY0() - imBbox.getMinY()), kim.getDimensions())
 
@@ -141,7 +146,8 @@ all the other peaks in its footprint are marked with x (cyan if deblended-as-psf
         del _kim
 
     if mapperInfo:
-        title = re.sub(r"[{}']", "", str(mapperInfo.getId(parent, None))) # ds9 doesn't handle those chars well
+        # ds9 doesn't handle those chars well
+        title = re.sub(r"[{}']", "", str(mapperInfo.getId(parent, None)))
     else:
         title = "0x%x == %d" % (parent.getId(), (parent.getId() & 0xffff))
     mosaicImage = mos.makeMosaic(frame=frame, title=title)
@@ -150,9 +156,10 @@ all the other peaks in its footprint are marked with x (cyan if deblended-as-psf
             ctype=ds9.BLACK, fontFamily="times", size=3)
 
     with ds9.Buffering():
-        for i, src in enumerate([parent] + kids):    
+        for i, src in enumerate([parent] + kids):
             x0, y0 = mos.getBBox(i).getMin()
-            x0 -= parent_im.getX0(); y0 -= parent_im.getY0()          
+            x0 -= parent_im.getX0()
+            y0 -= parent_im.getY0()
 
             if src.get("deblend.deblended-as-psf"):
                 centroid_ctype = ds9.GREEN
@@ -160,7 +167,7 @@ all the other peaks in its footprint are marked with x (cyan if deblended-as-psf
             else:
                 centroid_ctype = ds9.RED
                 peak_ctype = ds9.MAGENTA
-            
+
             ds9.dot("+", src.getX() + x0, src.getY() + y0, frame=frame,
                     size=symbolSize, ctype=centroid_ctype)
             for p in src.getFootprint().getPeaks():
@@ -187,13 +194,12 @@ all the other peaks in its footprint are marked with x (cyan if deblended-as-psf
             else:
                 plt.axis(pax)
 
-
     # add child centers and ellipses...
     if False:
-        for x,y,sty in xys:
+        for x, y, sty in xys:
             plt.plot(x, y, 'x', **sty)
     if ellipses:
-        for kid,sty in zip(kids,stys):
+        for kid, sty in zip(kids, stys):
             if kid.ispsf:
                 continue
             drawEllipses(plt, kid, ec=sty['color'], fc='none', alpha=0.7)
@@ -206,14 +212,14 @@ all the other peaks in its footprint are marked with x (cyan if deblended-as-psf
     for kid in dkids:
         ext = kid.ext
         # bounding box
-        xx = [ext[0],ext[1],ext[1],ext[0],ext[0]]
-        yy = [ext[2],ext[2],ext[3],ext[3],ext[2]]
+        xx = [ext[0], ext[1], ext[1], ext[0], ext[0]]
+        yy = [ext[2], ext[2], ext[3], ext[3], ext[2]]
         plt.plot(xx, yy, 'y-')
         # peak(s)
         plt.plot(kid.pfx, kid.pfy, 'yx')
-    
-    #plt.axis(pax)
-    
+
+    # plt.axis(pax)
+
 
 def footprintToImage(fp, mi=None, mask=False):
     if fp.isHeavy():
@@ -234,12 +240,14 @@ def footprintToImage(fp, mi=None, mask=False):
     except AttributeError:              # we failed to make it heavy
         assert not mi
         pass
-    
+
     if mask:
         im = im.getMask()
     return im
 
+
 class Families(list):
+
     def __init__(self, cat, butler=None, nChildMin=None):
         '''
         Returns [ (parent0, [child0, child1]), (parent1, [child0, ...]), ...]
@@ -279,7 +287,6 @@ class Families(list):
             for pid in parentIds:
                 if len(children[pid]) < nChildMin:
                     del children[pid]
-
 
         parentIds = sorted(children.keys())
 
@@ -333,14 +340,17 @@ class Families(list):
         return None
 
 # backwards compatibility
-    
+
+
 def getFamilies(cat, butler, nChildMin=None):
     return Families(cat, butler, nChildMin)
+
 
 def findFamily(families, objId):
     """Return the object's family (you may specify either the ID for the parent or a child)"""
 
     return families.find(objId)
+
 
 def makeDisplayFamily(calexp, families, matchRadius=20, background=-10, frame=None):
     """Factory function for callback function implementing showBlend"""
@@ -348,9 +358,11 @@ def makeDisplayFamily(calexp, families, matchRadius=20, background=-10, frame=No
         x0, y0 = calexp.getXY0()
         fam = families.find((x + x0, y + y0), matchRadius=matchRadius)
         if fam:
-            plotDeblendFamily(calexp, *fam, mapperInfo=families.mapperInfo, background=background, frame=frame)
+            plotDeblendFamily(calexp, *fam, mapperInfo=families.mapperInfo,
+                              background=background, frame=frame)
 
     return display_family
+
 
 def showBlend(calexp, families, key='d', frame0=0, frame=None, mtv=False):
     """Show blends interactively on ds9
@@ -386,6 +398,7 @@ Then hit 'key' (default: d) on objects of interest
             old[k] = ds9.setCallback(k)
 
         ds9.setCallback(key, makeDisplayFamily(calexp, families, frame=frame0))
+
         def new_h(*args):
             old['h'](*args)
             print "   1,2,4,8: Zoom to specified scale"
@@ -398,7 +411,7 @@ Then hit 'key' (default: d) on objects of interest
             def _zoom(k, x, y, z=z):
                 ds9.zoom(z, frame=frame0)
             ds9.setCallback('%d' % z, _zoom)
-        
+
         def callbackLog(k, x, y, i=[0]):
             """Cycle through stretches"""
             i[0] = (i[0] + 1)%3

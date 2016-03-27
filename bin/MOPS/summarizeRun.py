@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-# 
+#
 # LSST Data Management System
 # Copyright 2008, 2009, 2010 LSST Corporation.
-# 
+#
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
 #
@@ -11,14 +11,14 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
-# You should have received a copy of the LSST License Statement and 
-# the GNU General Public License along with this program.  If not, 
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
@@ -28,7 +28,10 @@ Given a DC2 runId, summarize quantities of interest from the database
 Run as summarizeRun.py runId
 
 """
-import string, sys, os
+import string
+import sys
+import os
+
 
 def execQuery(query):
 
@@ -40,7 +43,7 @@ def execQuery(query):
     mySqlCmd = 'mysql -h %s -u %s -p%s -e \'%s\'' % (mySqlHost, mySqlUser, mySqlPasswd, mySqlQuery)
 
     print os.popen(mySqlCmd).read()
-    
+
 
 # get input args
 runId = sys.argv[1]
@@ -52,7 +55,7 @@ print '--------------------------------------------------------\n'
 
 
 mySqlQuery = \
-           'USE %s;\
+    'USE %s;\
            SELECT visitId, ra, decl, filterId, dateObs, expTime, airmass\
            FROM Visit v, Raw_FPA_Exposure e\
            WHERE v.exposureId = e.rawFPAExposureId;' % (runId)
@@ -65,7 +68,7 @@ print 'Number of DIASources matching existing Objects; number that are new'
 print '------------------------------------------------------------------\n'
 
 mySqlQuery = \
-           'USE %s;\
+    'USE %s;\
            SELECT COUNT(DISTINCT first) Num_Matching\
            FROM DiaSourceToObjectMatches;\
            SELECT COUNT(*) Num_New FROM NewObjectIdPairs;' % (runId)
@@ -78,7 +81,7 @@ print 'Average and max number of sources matched to each object'
 print '--------------------------------------------------------\n'
 
 mySqlQuery = \
-           'USE %s; \
+    'USE %s; \
            SELECT AVG(a.nmatch) Avg_match_multiplicity, MAX(a.nmatch) Max_match_multiplicity\
            FROM\
            (SELECT count(*) nmatch, second FROM DiaSourceToObjectMatches GROUP BY second, visitId) a;' % (runId)
@@ -91,7 +94,7 @@ print 'MopsPreds that were detected'
 print '----------------------------\n'
 
 mySqlQuery = \
-           'USE %s; \
+    'USE %s; \
            SELECT COUNT(DISTINCT first,visitId) Num_Detected \
            FROM MopsPredToDiaSourceMatches;' % (runId)
 
@@ -108,7 +111,7 @@ print '-------------------------------------------\n'
 
 
 mySqlQuery =\
-           'USE %s;\
+    'USE %s;\
            SELECT visitId, url, count(*) nSources\
            FROM Visit v, Raw_CCD_Exposure e, DIASource s\
            WHERE v.exposureId = e.rawFPAExposureId\

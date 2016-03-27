@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-# 
+#
 # LSST Data Management System
 # Copyright 2008, 2009, 2010 LSST Corporation.
-# 
+#
 # This product includes software developed by the
 # LSST Project (http://www.lsst.org/).
 #
@@ -11,14 +11,14 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
-# You should have received a copy of the LSST License Statement and 
-# the GNU General Public License along with this program.  If not, 
+#
+# You should have received a copy of the LSST License Statement and
+# the GNU General Public License along with this program.  If not,
 # see <http://www.lsstcorp.org/LegalNotices/>.
 #
 
@@ -31,7 +31,9 @@ Run as findMopsPreds.py runId visitId
 
 NOTE: currently works with DC2 schema prior to 1/30/08 only!
 """
-import string, sys, os
+import string
+import sys
+import os
 
 # image directory setup
 
@@ -60,8 +62,8 @@ for dir in imageCcdDirs:
     dirComps = string.split(dir, '/')
     nComps = len(dirComps)
     ccd = dirComps[nComps-1]
-    imageName = '%s/%s/%sp_%s_diff_img.fits' % (imageDir,dir,visitId,ccd)
-##     print imageName
+    imageName = '%s/%s/%sp_%s_diff_img.fits' % (imageDir, dir, visitId, ccd)
+# print imageName
     imageList.append(imageName)
 
 # get list of MopsPreds
@@ -70,18 +72,18 @@ mySqlQuery = 'use %s; select orbit_id, ra_deg, dec_deg from MopsPreds_visit%s;' 
 
 mySqlCmd = 'mysql -h %s -u %s -p%s -e \'%s\'' % (mySqlHost, mySqlUser, mySqlPasswd, mySqlQuery)
 
-## print mySqlCmd
+# print mySqlCmd
 
 for foo in os.popen(mySqlCmd).readlines():
     (orbit_id, ra, dec) = string.split(foo)
     if ra != 'ra_deg':
-##         print ra, dec
+        # print ra, dec
         for image in imageList:
             sky2xyCmd = 'sky2xy %s %s %s' % (image, ra, dec)
             result = os.popen(sky2xyCmd).read()  # want form that gives all as one line
-            if string.find(result,'off') != -1:
+            if string.find(result, 'off') != -1:
                 # not found
-##                 print result
+                # print result
                 pass
             else:
                 # found

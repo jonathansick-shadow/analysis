@@ -30,6 +30,7 @@ import lsst.afw.display.utils as displayUtils
 import lsst.meas.algorithms.utils as maUtils
 import lsst.analysis as analysis
 
+
 def showPsf(da, distort=False, stampSize=19, nx=7, ny=None, gutterLevel=0.05):
     mos = displayUtils.Mosaic(background=gutterLevel, gutter=1)
 
@@ -37,12 +38,12 @@ def showPsf(da, distort=False, stampSize=19, nx=7, ny=None, gutterLevel=0.05):
         ny = 2*nx
 
     dataId = da.dataId.copy()
-    for ccd in (8, 9, 5, 4, 3,  6, 7, 2, 1, 0):
+    for ccd in (8, 9, 5, 4, 3, 6, 7, 2, 1, 0):
         dataId.update(ccd=ccd)
         calexp = da.getDataset("calexp", dataId)[0]
         if False:
             print calexp.getDetector().getId()
-            
+
         mos.append(maUtils.showPsfMosaic(calexp, stampSize=stampSize,
                                          nx=nx, ny=ny, distort=distort).makeMosaic(mode=nx))
 
